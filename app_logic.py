@@ -1,5 +1,6 @@
 import os, sys, urllib.request, json
 import utils
+import link_provider
 import player_vlc as player_module
 import pyperclip
 
@@ -24,26 +25,32 @@ class AppLogic():
 			self.config = json.loads(file.read())
 		self.player = player_module.Player()
 
-		self.selectedArtist = None
-		self.selectedAlbum = None
-		self.artistsDict = None
-		self.albumsDict = None
-		self.songDict = None
-		self.filteredList = None
+		self.selectedArtist = -1
+		self.selectedAlbum = -1
+
+		self.artistDat = None
+		self.albumDat = None
+		self.songDat = None
+
+		self.filterMap = None
+		self.filteredIndices = None
 		self.filtered = False
 		
-		self.playlistsDict = None
-		self.selectedPlaylist = None
-		self.playlistSongsDict = None
+		self.playlistDat = None
+		self.selectedPlaylist = -1
+		self.playlistSongDat = None
+
+	def fixIndexIfFiltered(self, index):
+		return index if not self.filtered else self.filterMap[self.filteredList[index]]
 
 	def GoBack(self):
 		if self.state == self.LIBRARY_STATE:
 			if self.libState > self.ARTIST_SELECTION:
 				self.libState -= 1
 				if self.libState == self.ALBUM_SELECTION:
-					self.listViewModel.setStringList(list(self.albumsDict.keys()))
+					self.listViewModel.setStringList([item[0] for item in self.albumDat])
 				else: # artist selection
-					self.listViewModel.setStringList(list(self.artistsDict.keys()))
+					self.listViewModel.setStringList([item[0] for item in self.artistDat])
 				self.filtered = False
 		else:
 			self.LoadPlaylists()
@@ -55,38 +62,42 @@ class AppLogic():
 			if self.libState < self.SONG_SELECTION:
 				self.libState += 1
 				if self.libState == self.ALBUM_SELECTION:
-					self.selectedArtist = list(self.artistsDict.keys())[index] if not self.filtered else self.filteredList[index]
-					self.albumsDict = utils.fetchAlbums(self.artistsDict[self.selectedArtist])
-					self.listViewModel.setStringList(list(self.albumsDict.keys()))
+					self.selectedArtist = self.fixIndexIfFiltered(index)
+					self.albumDat = utils.fetchAlbums(self.artistDat[self.selectedArtist][1])
+					self.listViewModel.setStringList([item[0] for item in self.albumDat])
 				else: # song selection
-					self.selectedAlbum = list(self.albumsDict.keys())[index] if not self.filtered else self.filteredList[index]
-					self.songDict = utils.fetchSongs(self.albumsDict[self.selectedAlbum])
-					self.listViewModel.setStringList(list(self.songDict.keys()))
+					self.selectedAlbum = self.fixIndexIfFiltered(index)
+					self.songDat = utils.fetchSongs(self.albumDat[self.selectedAlbum][1])
+					self.listViewModel.setStringList([item[0] for item in self.songDat])
 				self.filtered = False
 			else: # play the selected song
-				self.player.setPlaylist(list(self.songDict.values()))
-				self.player.play(index)
+				selectedSong = self.fixIndexIfFiltered(index)
+				self.player.setPlaylist([item[1] for item in self.songDat])
+				self.player.play(selectedSong)
 		else:
 			if self.playlistState == self.PLAYLIST_SELECTION:
-				self.selectedPlaylist = list(self.playlistsDict.keys())[index]
-				self.playlistSongsDict = utils.fetchPlaylistSongs(self.playlistsDict[self.selectedPlaylist])
-				self.listViewModel.setStringList(list(self.playlistSongsDict.keys()))
+				self.selectedPlaylist = self.fixIndexIfFiltered(index)
+				self.playlistSongDat = utils.fetchPlaylistSongs(self.playlistDat[self.selectedPlaylist][1])
+				self.listViewModel.setStringList([item[0] for item in self.playlistSongDat])
 				self.playlistState += 1
 			else:
-				self.player.setPlaylist(list(self.playlistSongsDict.values()))
-				self.player.play(index)
+				selectedSong = self.fixIndexIfFiltered(index)
+				self.player.setPlaylist([item[3] for item in self.playlistSongDat])
+				self.player.play(selectedSong)
 
 	def LoadArtists(self):
+		self.filtered = False
 		self.state = self.LIBRARY_STATE
 		self.libState = self.ARTIST_SELECTION
-		self.artistsDict = utils.fetchArtists(self.config["musicRoot"])
-		self.listViewModel.setStringList(list(self.artistsDict.keys()))
+		self.artistDat = utils.fetchArtists(self.config["libraryRoot"])
+		self.listViewModel.setStringList([item[0] for item in self.artistDat])
 
 	def LoadPlaylists(self):
+		self.filtered = False
 		self.state = self.PLAYLIST_STATE
 		self.playlistState = self.PLAYLIST_SELECTION
-		self.playlistsDict = utils.fetchPlaylists(self.config["playlistRoot"])
-		self.listViewModel.setStringList(list(self.playlistsDict.keys()))
+		self.playlistDat = utils.fetchPlaylists(self.config["playlistRoot"])
+		self.listViewModel.setStringList([item[0] for item in self.playlistDat])
 
 	def SetVolume(self, value):
 		self.player.setVolume(value)
@@ -103,30 +114,66 @@ class AppLogic():
 	def Next(self):
 		self.player.next()
 
+	def generateFilterData(self, dat, index, text):
+		itemList = [item[index] for item in dat]
+		for i in range(len(itemList)):
+			if text.lower() in itemList[i].lower():
+				self.filteredList.append(itemList[i]) 
+				self.filterMap[itemList[i]] = i
 	def OnSearch(self, text):
 		self.filtered = True
 		self.filteredList = []
-		if self.libState == self.ARTIST_SELECTION:
-			artistList = list(self.artistsDict.keys())
-			for i in range(len(artistList)):
-				if text.lower() in artistList[i].lower():
-					self.filteredList.append(artistList[i]) 
-			self.listViewModel.setStringList(self.filteredList)
-		elif self.libState == self.ALBUM_SELECTION:
-			albumList = list(self.albumsDict.keys())
-			for i in range(len(albumList)):
-				if text.lower() in albumList[i].lower():
-					self.filteredList.append(albumList[i]) 
-			self.listViewModel.setStringList(self.filteredList)
+		self.filterMap = {}
+		if self.state == self.LIBRARY_STATE:
+			if self.libState == self.ARTIST_SELECTION:
+				self.generateFilterData(self.artistDat, 0, text)
+			elif self.libState == self.ALBUM_SELECTION:
+				self.generateFilterData(self.albumDat, 0, text)
+			else: # song selection
+				self.generateFilterData(self.songDat, 0, text)
+		else: # playlist state
+			if self.playlistState == self.PLAYLIST_SELECTION:
+				self.generateFilterData(self.playlistDat, 0, text)
+			else: # playlist song selection
+				self.generateFilterData(self.playlistSongDat, 0, text)
+		self.listViewModel.setStringList(self.filteredList)
+
 
 	def CopyMp3Url(self, index):
-		pyperclip.copy(list(self.songDict.values())[index])
+		index = self.fixIndexIfFiltered(index)
+		if self.state == self.LIBRARY_STATE:
+			pyperclip.copy(self.songDat[index][1])
+		else:
+			pyperclip.copy(self.playlistSongDat[index][3])
+	def CopyYoutubeUrl(self, index):
+		index = self.fixIndexIfFiltered(index)
+		if "googleApiKey" not in self.config:
+			print("Google api key not found in config.json")
+			return
+		if self.state == self.LIBRARY_STATE:
+			searchText = self.songDat[index][0] + f" {self.artistDat[self.selectedArtist][0]}"
+			pyperclip.copy(link_provider.getYoutubeLink(searchText, self.config["googleApiKey"]))
+		else: # playlists state
+			searchText = self.playlistSongDat[index][0] + f" {self.playlistSongDat[index][1]}"
+			pyperclip.copy(link_provider.getYoutubeLink(searchText, self.config["googleApiKey"]))
+
+	def AddToQueue(self, index):
+		index = self.fixIndexIfFiltered(index)
+		if self.state == self.LIBRARY_STATE:
+			self.player.addToQueue(self.songDat[index][1])
+		else:
+			self.player.addToQueue(self.playlistSongDat[index][3])
 
 	def GetPlaylists(self):
-		self.playlistsDict = utils.fetchPlaylists(self.config["playlistRoot"])
-		self.playlistListViewModel.setStringList(list(self.playlistsDict.keys()))
+		self.playlistDat = utils.fetchPlaylists(self.config["playlistRoot"])
+		self.playlistListViewModel.setStringList([item[0] for item in self.playlistDat])
 
 	def AddToPlaylist(self, playlistIndex, songIndex):
-		string = list(self.songDict.keys())[songIndex] + "\\" + self.selectedArtist + "\\" + self.selectedAlbum + "\\" + list(self.songDict.values())[songIndex]
-		with open(list(self.playlistsDict.values())[playlistIndex], 'a+') as file:
-			file.write(string + '\n')
+		songIndex = self.fixIndexIfFiltered(songIndex)
+		# playlist element format: songName\artistName\albumName\songURL
+		if self.state == self.LIBRARY_STATE:
+			lineToWrite = self.songDat[songIndex][0] + '\\' + self.artistDat[self.selectedArtist][0] + '\\' + self.albumDat[self.selectedAlbum][0] + '\\' + self.songDat[songIndex][1]
+		else:
+			lineToWrite = self.playlistSongDat[songIndex][0] + '\\' + self.playlistSongDat[songIndex][1] + '\\' + self.playlistSongDat[songIndex][2] + '\\' + self.playlistSongDat[songIndex][3]
+		with open(self.playlistDat[playlistIndex][1], 'a+') as file:
+			file.write(lineToWrite + '\n')

@@ -70,7 +70,9 @@ ApplicationWindow {
 				{
 					if (mouse.button == Qt.RightButton)
 					{
-						if (backend.state == 0 && backend.libState == 2)
+						if (
+							backend.state == 0 && backend.libState == 2 ||
+							backend.state == 1 && backend.playlistState == 1)
 						{
 							backend.setSelectedIndex(index)
 							songContextMenu.open()
@@ -135,8 +137,8 @@ ApplicationWindow {
 		anchors.centerIn: parent
 		
 		MenuItem {
-			text: "Copy mp3 url"
-			onClicked: backend.copyMp3Url()
+			text: "Add to queue"
+			onClicked: backend.addToQueue()
 		}
 		MenuItem {
 			text: "Add to playlist"
@@ -145,6 +147,14 @@ ApplicationWindow {
 				backend.getPlaylists()
 				playlistSelectionMenu.open()
 			}
+		}
+		MenuItem {
+			text: "Copy mp3 url"
+			onClicked: backend.copyMp3Url()
+		}
+		MenuItem {
+			text: "Copy youtube link"
+			onClicked: backend.copyYoutubeUrl()
 		}
 	}
 

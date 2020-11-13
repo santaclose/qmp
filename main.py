@@ -47,12 +47,21 @@ class Backend(QObject):
 	@Property(int, notify=None)
 	def libState(self):
 		return self.m_appLogic.libState
+	@Property(int, notify=None)
+	def playlistState(self):
+		return self.m_appLogic.playlistState
 	@Slot(int)
 	def setSelectedIndex(self, index):
 		self.m_selectedIndex = index
 	@Slot()
 	def copyMp3Url(self):
 		self.m_appLogic.CopyMp3Url(self.m_selectedIndex)
+	@Slot()
+	def copyYoutubeUrl(self):
+		self.m_appLogic.CopyYoutubeUrl(self.m_selectedIndex)
+	@Slot()
+	def addToQueue(self):
+		self.m_appLogic.AddToQueue(self.m_selectedIndex)
 	@Slot()
 	def getPlaylists(self):
 		self.m_appLogic.GetPlaylists()
