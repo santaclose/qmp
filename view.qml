@@ -18,7 +18,7 @@ ApplicationWindow {
 
 			ToolButton {
 				Layout.alignment: Qt.AlignLeft
-				text: "\uE72B"
+				icon.source: "icons/back.svg"
 				onClicked: {
 					backend.onBackButtonClicked()
 					searchTextField.text = ""
@@ -34,7 +34,7 @@ ApplicationWindow {
 
 			ToolButton {
 				Layout.alignment: Qt.AlignRight
-				text: "\uE767"
+				icon.source: "icons/volume.svg"
 				onClicked: {
 					volumeMenu.open()
 				}
@@ -42,7 +42,7 @@ ApplicationWindow {
 
 			ToolButton {
 				Layout.alignment: Qt.AlignRight
-				text: "\uE700"
+				icon.source: "icons/menu.svg"
 				onClicked: {
 					appMenu.open()
 				}
@@ -90,17 +90,17 @@ ApplicationWindow {
 			width: parent.width
 			ToolButton {
 				Layout.alignment: Qt.AlignLeft
-				text: "\uE892"
+				icon.source: "icons/prev.svg"
 				onClicked: backend.onPrevButtonClicked()
 			}
 			ToolButton {
 				Layout.alignment: Qt.AlignLeft
-				text: "\uEDB4"
+				icon.source: "icons/pause.svg"
 				onClicked: backend.onPauseButtonClicked()
 			}
 			ToolButton {
 				Layout.alignment: Qt.AlignLeft
-				text: "\uE893"
+				icon.source: "icons/next.svg"
 				onClicked: backend.onNextButtonClicked()
 			}
 			Slider {
