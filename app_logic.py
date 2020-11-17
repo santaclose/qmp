@@ -40,6 +40,9 @@ class AppLogic():
 		self.selectedPlaylist = -1
 		self.playlistSongDat = None
 
+	def updateStringModel(self, model, list):
+		model.setStringList([item.replace('&', '&&') for item in list])
+
 	def fixIndexIfFiltered(self, index):
 		return index if not self.filtered else self.filterMap[self.filteredList[index]]
 
@@ -48,9 +51,9 @@ class AppLogic():
 			if self.libState > self.ARTIST_SELECTION:
 				self.libState -= 1
 				if self.libState == self.ALBUM_SELECTION:
-					self.listViewModel.setStringList([item[0] for item in self.albumDat])
+					self.updateStringModel(self.listViewModel, [item[0] for item in self.albumDat])
 				else: # artist selection
-					self.listViewModel.setStringList([item[0] for item in self.artistDat])
+					self.updateStringModel(self.listViewModel, [item[0] for item in self.artistDat])
 				self.filtered = False
 		else:
 			self.LoadPlaylists()
@@ -64,11 +67,11 @@ class AppLogic():
 				if self.libState == self.ALBUM_SELECTION:
 					self.selectedArtist = self.fixIndexIfFiltered(index)
 					self.albumDat = utils.fetchAlbums(self.artistDat[self.selectedArtist][1])
-					self.listViewModel.setStringList([item[0] for item in self.albumDat])
+					self.updateStringModel(self.listViewModel, [item[0] for item in self.albumDat])
 				else: # song selection
 					self.selectedAlbum = self.fixIndexIfFiltered(index)
 					self.songDat = utils.fetchSongs(self.albumDat[self.selectedAlbum][1])
-					self.listViewModel.setStringList([item[0] for item in self.songDat])
+					self.updateStringModel(self.listViewModel, [item[0] for item in self.songDat])
 				self.filtered = False
 			else: # play the selected song
 				selectedSong = self.fixIndexIfFiltered(index)
@@ -78,7 +81,7 @@ class AppLogic():
 			if self.playlistState == self.PLAYLIST_SELECTION:
 				self.selectedPlaylist = self.fixIndexIfFiltered(index)
 				self.playlistSongDat = utils.fetchPlaylistSongs(self.playlistDat[self.selectedPlaylist][1])
-				self.listViewModel.setStringList([item[0] for item in self.playlistSongDat])
+				self.updateStringModel(self.listViewModel, [item[0] for item in self.playlistSongDat])
 				self.playlistState += 1
 			else:
 				selectedSong = self.fixIndexIfFiltered(index)
@@ -90,14 +93,14 @@ class AppLogic():
 		self.state = self.LIBRARY_STATE
 		self.libState = self.ARTIST_SELECTION
 		self.artistDat = utils.fetchArtists(self.config["libraryRoot"])
-		self.listViewModel.setStringList([item[0] for item in self.artistDat])
+		self.updateStringModel(self.listViewModel, [item[0] for item in self.artistDat])
 
 	def LoadPlaylists(self):
 		self.filtered = False
 		self.state = self.PLAYLIST_STATE
 		self.playlistState = self.PLAYLIST_SELECTION
 		self.playlistDat = utils.fetchPlaylists(self.config["playlistRoot"])
-		self.listViewModel.setStringList([item[0] for item in self.playlistDat])
+		self.updateStringModel(self.listViewModel, [item[0] for item in self.playlistDat])
 
 	def SetVolume(self, value):
 		self.player.setVolume(value)
@@ -136,7 +139,7 @@ class AppLogic():
 				self.generateFilterData(self.playlistDat, 0, text)
 			else: # playlist song selection
 				self.generateFilterData(self.playlistSongDat, 0, text)
-		self.listViewModel.setStringList(self.filteredList)
+		self.updateStringModel(self.listViewModel, self.filteredList)
 
 
 	def CopyMp3Url(self, index):
@@ -166,7 +169,7 @@ class AppLogic():
 
 	def GetPlaylists(self):
 		self.playlistDat = utils.fetchPlaylists(self.config["playlistRoot"])
-		self.playlistListViewModel.setStringList([item[0] for item in self.playlistDat])
+		self.updateStringModel(self.playlistListViewModel, [item[0] for item in self.playlistDat])
 
 	def AddToPlaylist(self, playlistIndex, songIndex):
 		songIndex = self.fixIndexIfFiltered(songIndex)
