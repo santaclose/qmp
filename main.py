@@ -1,6 +1,7 @@
 from PySide2.QtWidgets import QApplication
 from PySide2.QtCore import Qt, QCoreApplication, QStringListModel, QUrl, QObject, Signal, Property, Slot
 from PySide2.QtQml import QQmlApplicationEngine
+from PySide2.QtGui import QFont, QFontDatabase
 from app_logic import AppLogic
 from os import sys
 
@@ -74,6 +75,11 @@ if __name__ == '__main__':
 
 	QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
 	app = QApplication(sys.argv)
+
+	fdb = QFontDatabase()
+	fdb.addApplicationFont("fonts/FiraSans-Regular.ttf")
+	appFont = QFont("Fira Sans")
+	app.setFont(appFont)
 
 	QCoreApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
 	engine = QQmlApplicationEngine()
