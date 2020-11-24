@@ -39,6 +39,7 @@ class AppLogic():
 		self.playlistDat = None
 		self.selectedPlaylist = -1
 		self.playlistSongDat = None
+		self.currentlyPlayingPlaylist = None
 
 	def updateStringModel(self, model, list):
 		model.setStringList([item.replace('&', '&&') for item in list])
@@ -87,6 +88,7 @@ class AppLogic():
 				selectedSong = self.fixIndexIfFiltered(index)
 				self.player.setPlaylist([item[3] for item in self.playlistSongDat])
 				self.player.play(selectedSong)
+				self.currentlyPlayingPlaylist = self.playlistDat[self.selectedPlaylist][0]
 
 	def LoadArtists(self):
 		self.filtered = False
@@ -172,6 +174,9 @@ class AppLogic():
 		self.updateStringModel(self.playlistListViewModel, [item[0] for item in self.playlistDat])
 
 	def AddToPlaylist(self, playlistIndex, songIndex):
+		if self.playlistDat[playlistIndex][0] == self.currentlyPlayingPlaylist:
+			self.AddToQueue(songIndex)
+
 		songIndex = self.fixIndexIfFiltered(songIndex)
 		# playlist element format: songName\artistName\albumName\songURL
 		if self.state == self.LIBRARY_STATE:
