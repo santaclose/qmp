@@ -6,6 +6,21 @@ import pyperclip
 
 class AppLogic():
 	def __init__(self, listViewModel, playlistListViewModel):
+		
+
+		try:
+			with open("config.json", 'r') as file:
+				fileContents = file.read()
+		except:
+			print("Configuration file does not exist, creating one")
+			with open("config.json", "a+") as file:
+				file.write('{\n\t"libraryRoot": "",\n\t"playlistRoot": "",\n\t"googleApiKey": ""\n}')
+			exit()
+		try:
+			self.config = json.loads(fileContents)
+		except:
+			print("Invalid json file")
+
 		self.LIBRARY_STATE = 0
 		self.PLAYLIST_STATE = 1
 		self.state = 0
@@ -21,8 +36,6 @@ class AppLogic():
 
 		self.listViewModel = listViewModel
 		self.playlistListViewModel = playlistListViewModel
-		with open("config.json", 'r') as file:
-			self.config = json.loads(file.read())
 		self.player = player_module.Player()
 
 		self.selectedArtist = -1
