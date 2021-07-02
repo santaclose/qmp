@@ -79,7 +79,9 @@ ApplicationWindow {
 						}
 					}
 					else
+					{
 						backend.onListItemClicked(index)
+					}
 				}
 			}
 		}
@@ -121,6 +123,10 @@ ApplicationWindow {
 			text: "Playlists"
 			onClicked: backend.onPlaylistsButtonClicked()
 		}
+		MenuItem {
+			text: "Create playlist"
+			onClicked: createPlaylistMenu.open()
+		}
 	}
 
 	Menu {
@@ -155,6 +161,25 @@ ApplicationWindow {
 		MenuItem {
 			text: "Copy youtube link"
 			onClicked: backend.copyYoutubeUrl()
+		}
+	}
+
+	Menu {
+		id: createPlaylistMenu
+		anchors.centerIn: parent
+		TextField {
+			id: newPlaylistTextField
+			placeholderText: qsTr("Name")
+			Layout.alignment: Qt.AlignCenter
+		}
+		ToolButton {
+			Layout.alignment: Qt.AlignRight
+			text: "Add"
+			onClicked:
+			{
+				backend.onCreatePlaylistClicked(newPlaylistTextField.text)
+				createPlaylistMenu.close()
+			}
 		}
 	}
 

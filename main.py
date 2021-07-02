@@ -21,6 +21,9 @@ class Backend(QObject):
 	@Slot()
 	def onLibraryButtonClicked(self):
 		self.m_appLogic.LoadArtists()
+	@Slot(str)
+	def onCreatePlaylistClicked(self, text):
+		self.m_appLogic.CreatePlaylist(text)
 	@Slot()
 	def onPrevButtonClicked(self):
 		self.m_appLogic.Prev()

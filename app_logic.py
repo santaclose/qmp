@@ -1,24 +1,11 @@
-import os, sys, urllib.request, json
-import utils
-import link_provider
 import player_vlc as player_module
+import link_provider
 import pyperclip
+import utils
 
 class AppLogic():
 
 	def __init__(self, listViewModel, playlistListViewModel):
-		try:
-			with open("config.json", 'r') as file:
-				fileContents = file.read()
-		except:
-			print("Configuration file does not exist, creating one")
-			with open("config.json", "a+") as file:
-				file.write('{\n\t"libraryRoot": "",\n\t"playlistRoot": "",\n\t"googleApiKey": ""\n}')
-			exit()
-		try:
-			self.config = json.loads(fileContents)
-		except:
-			print("Invalid json file")
 
 		self.LIBRARY_STATE = 0
 		self.PLAYLIST_STATE = 1
@@ -106,14 +93,14 @@ class AppLogic():
 		self.filtered = False
 		self.state = self.LIBRARY_STATE
 		self.libState = self.ARTIST_SELECTION
-		self.artistDat = utils.fetchArtists(self.config["libraryRoot"])
+		self.artistDat = utils.fetchArtists(utils.config["libraryRoot"])
 		self.updateStringModel(self.listViewModel, [item["ArtistName"] for item in self.artistDat])
 
 	def LoadPlaylists(self):
 		self.filtered = False
 		self.state = self.PLAYLIST_STATE
 		self.playlistState = self.PLAYLIST_SELECTION
-		self.playlistDat = utils.fetchPlaylists(self.config["playlistRoot"])
+		self.playlistDat = utils.fetchPlaylists(utils.config["playlistRoot"])
 		self.updateStringModel(self.listViewModel, [item["PlaylistName"] for item in self.playlistDat])
 
 	def SetVolume(self, value):
@@ -164,15 +151,15 @@ class AppLogic():
 			pyperclip.copy(self.playlistSongDat[index]["AudioPath"])
 	def CopyYoutubeUrl(self, index):
 		index = self.fixIndexIfFiltered(index)
-		if "googleApiKey" not in self.config:
+		if "googleApiKey" not in utils.config:
 			print("Google api key not found in config.json")
 			return
 		if self.state == self.LIBRARY_STATE:
 			searchText = self.songDat[index]["SongName"] + f' {self.artistDat[self.selectedArtist]["ArtistName"]}'
-			pyperclip.copy(link_provider.getYoutubeLink(searchText, self.config["googleApiKey"]))
+			pyperclip.copy(link_provider.getYoutubeLink(searchText, utils.config["googleApiKey"]))
 		else: # playlists state
 			searchText = self.playlistSongDat[index]["SongName"] + f' {self.playlistSongDat[index]["ArtistName"]}'
-			pyperclip.copy(link_provider.getYoutubeLink(searchText, self.config["googleApiKey"]))
+			pyperclip.copy(link_provider.getYoutubeLink(searchText, utils.config["googleApiKey"]))
 
 	def AddToQueue(self, index):
 		index = self.fixIndexIfFiltered(index)
@@ -181,8 +168,20 @@ class AppLogic():
 		else:
 			self.player.addToQueue(self.playlistSongDat[index]["AudioPath"])
 
+	def CreatePlaylist(self, text):
+		playlistFolder = utils.config["playlistFolder"]
+		playlistFolder += "/" if playlistFolder[-1] != "/" else ""
+		pathToNewPlaylist = playlistFolder + utils.nameToDirectoryName(text) + ".dat"
+		utils.writeFile(pathToNewPlaylist, "")
+
+		playlistRoot = utils.config["playlistRoot"]
+		playlistRootContent = utils.readFile(playlistRoot)
+		playlistRootContent += "\n" if len(playlistRootContent) > 0 and playlistRootContent[-1] != "\n" else ""
+		playlistRootContent += text + "\\" + pathToNewPlaylist
+		utils.writeFile(playlistRoot, playlistRootContent)
+
 	def GetPlaylists(self):
-		self.playlistDat = utils.fetchPlaylists(self.config["playlistRoot"])
+		self.playlistDat = utils.fetchPlaylists(utils.config["playlistRoot"])
 		self.updateStringModel(self.playlistListViewModel, [item["PlaylistName"] for item in self.playlistDat])
 
 	def AddToPlaylist(self, playlistIndex, songIndex):
@@ -195,5 +194,8 @@ class AppLogic():
 			lineToWrite = self.songDat[songIndex]["SongName"] + '\\' + self.artistDat[self.selectedArtist]["ArtistName"] + '\\' + self.albumDat[self.selectedAlbum]["AlbumName"] + '\\' + self.songDat[songIndex]["AudioPath"]
 		else:
 			lineToWrite = self.playlistSongDat[songIndex]["SongName"] + '\\' + self.playlistSongDat[songIndex]["ArtistName"] + '\\' + self.playlistSongDat[songIndex]["AlbumName"] + '\\' + self.playlistSongDat[songIndex]["AudioPath"]
-		with open(self.playlistDat[playlistIndex]["PlaylistPath"], 'a+') as file:
-			file.write(lineToWrite + '\n')
+
+		playlistContent = utils.readFile(self.playlistDat[playlistIndex]["PlaylistPath"])
+		playlistContent += "\n" if len(playlistContent) > 0 and playlistContent[-1] != "\n" else ""
+		playlistContent += lineToWrite + '\n'
+		utils.writeFile(self.playlistDat[playlistIndex]["PlaylistPath"], playlistContent)
