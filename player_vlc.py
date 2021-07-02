@@ -27,7 +27,7 @@ class Player:
 
 	def next(self):
 		self.listPlayer.next()
-	
+
 	def pause(self):
 		self.listPlayer.pause()
 	

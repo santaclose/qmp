@@ -17,33 +17,29 @@ def fetchFile(resource):
 		file.close()
 		return fileContents.replace('\r', '')
 
-# returns array with format: [[ArtistName, AlbumListPath]...]
+
 def fetchArtists(url):
 	fileContents = fetchFile(url)
-	return [x.split("\\") for x in fileContents.split("\n") if len(x) > 0]
+	return [{"ArtistName": x.split("\\")[0], "AlbumListPath": x.split("\\")[1]} for x in fileContents.split("\n") if len(x) > 0]
 
-# returns array with format: [[AlbumName, AlbumPath, ImagePath]...]
 def fetchAlbums(url):
 	fileContents = fetchFile(url)
-	return [x.split("\\") for x in fileContents.split("\n") if len(x) > 0]
+	return [{"AlbumName": x.split("\\")[0], "AlbumPath": x.split("\\")[1], "ImagePath": x.split("\\")[2]} for x in fileContents.split("\n") if len(x) > 0]
 
-# returns array with format: [[SongName, mp3url]...]
 def fetchSongs(url):
 	fileContents = fetchFile(url)
-	return [x.split("\\") for x in fileContents.split("\n")[1:] if len(x) > 0]
+	return [{"SongName": x.split("\\")[0], "AudioPath": x.split("\\")[1]} for x in fileContents.split("\n")[1:] if len(x) > 0]
 
 
-# returns array with format: [[PlaylistName, PlaylistPath]...]
 def fetchPlaylists(url):
 	fileContents = fetchFile(url)
-	return [x.split("\\") for x in fileContents.split("\n") if len(x) > 0]
+	return [{"PlaylistName": x.split("\\")[0], "PlaylistPath": x.split("\\")[1]} for x in fileContents.split("\n") if len(x) > 0]
 
-# returns array with format: [[Song, Artist, Album, mp3url]...]
 def fetchPlaylistSongs(url):
 	fileContents = fetchFile(url)
-	return [x.split("\\") for x in fileContents.split("\n") if len(x) > 0]
+	return [{"SongName": x.split("\\")[0], "ArtistName": x.split("\\")[1], "AlbumName": x.split("\\")[2], "AudioPath": x.split("\\")[3]} for x in fileContents.split("\n") if len(x) > 0]
 
-# returns the mp3 file in a byte array
+# returns the mp3 file in a byte array (not curretly being used)
 def fetchMp3(url):
 	result = subprocess.run(['wget', url, '-O', '-'], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
 	return result.stdout
