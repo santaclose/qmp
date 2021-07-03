@@ -30,6 +30,7 @@ ApplicationWindow {
 				placeholderText: qsTr("Search")
 				Layout.alignment: Qt.AlignCenter
 				onTextChanged: backend.onSearchBarChanged(text)
+				onPressed: text = ""
 			}
 
 			ToolButton {
