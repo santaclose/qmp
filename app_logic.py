@@ -175,7 +175,7 @@ class AppLogic():
 		utils.writeFile(pathToNewPlaylist, "")
 
 		playlistRoot = utils.config["playlistRoot"]
-		playlistRootContent = utils.readFile(playlistRoot)
+		playlistRootContent = utils.readFile(playlistRoot, forceLastVersion=True)
 		playlistRootContent += "\n" if len(playlistRootContent) > 0 and playlistRootContent[-1] != "\n" else ""
 		playlistRootContent += text + "\\" + pathToNewPlaylist
 		utils.writeFile(playlistRoot, playlistRootContent)
@@ -195,7 +195,7 @@ class AppLogic():
 		else:
 			lineToWrite = self.playlistSongDat[songIndex]["SongName"] + '\\' + self.playlistSongDat[songIndex]["ArtistName"] + '\\' + self.playlistSongDat[songIndex]["AlbumName"] + '\\' + self.playlistSongDat[songIndex]["AudioPath"]
 
-		playlistContent = utils.readFile(self.playlistDat[playlistIndex]["PlaylistPath"])
+		playlistContent = utils.readFile(self.playlistDat[playlistIndex]["PlaylistPath"], forceLastVersion=True)
 		playlistContent += "\n" if len(playlistContent) > 0 and playlistContent[-1] != "\n" else ""
 		playlistContent += lineToWrite + '\n'
 		utils.writeFile(self.playlistDat[playlistIndex]["PlaylistPath"], playlistContent)

@@ -5,7 +5,6 @@ import subprocess
 import json
 import re
 
-
 config = None
 try:
 	with open("config.json", 'r') as file:
@@ -20,6 +19,8 @@ try:
 	print("Configuration file loaded")
 except:
 	print("Invalid json file")
+
+githubUrlPattern = r"^https?://raw.githubusercontent.com/([^/]+)/([^/]+)/([^/]+)/(.+)$"
 
 
 def nameToDirectoryName(name):
@@ -38,8 +39,20 @@ def htmlize(searchText):
 def similar(a, b):
 	return SequenceMatcher(None, a, b).ratio()
 
-def readFile(resource):
-	if resource.startswith("http://") or resource.startswith("https://"):
+def readFile(resource, forceLastVersion=False):
+	if re.match(githubUrlPattern, resource) and forceLastVersion:
+		searchResult = re.search(githubUrlPattern, resource)
+		githubUser = searchResult.group(1)
+		githubRepo = searchResult.group(2)
+		githubBranch = searchResult.group(3)
+		githubFile = searchResult.group(4)
+		g = Github(config['githubToken'])
+		try:
+			return g.get_user().get_repo(githubRepo).get_contents(githubFile).decoded_content.decode()
+		except:
+			return None
+			pass
+	elif resource.startswith("http://") or resource.startswith("https://"):
 		return urlopen(resource).read().decode('utf-8').replace('\r', '');
 	else:
 		with open(resource, 'r') as file:
@@ -48,7 +61,7 @@ def readFile(resource):
 
 def writeFile(resource, contents):
 	if resource.startswith("http://") or resource.startswith("https://"):
-		searchResult = re.search(r"^https?://raw.githubusercontent.com/([^/]+)/([^/]+)/([^/]+)/(.+)$", resource)
+		searchResult = re.search(githubUrlPattern, resource)
 		githubUser = searchResult.group(1)
 		githubRepo = searchResult.group(2)
 		githubBranch = searchResult.group(3)
