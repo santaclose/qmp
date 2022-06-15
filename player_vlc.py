@@ -6,7 +6,6 @@ class Player:
 	
 	def __init__(self):
 		self.Player = Instance('--loop --no-video')
-		self.volume = 50
 		self.listPlayer = None
 
 	def setPlaylist(self, playlist):

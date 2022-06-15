@@ -40,6 +40,8 @@ class AppLogic():
 		self.playlistSongDat = None
 		self.currentlyPlayingPlaylist = None
 
+		self.player.setVolume(utils.config["defaultVolume"] if "defaultVolume" in utils.config.keys() else 0.5)
+
 	def updateStringModel(self, model, list):
 		model.setStringList([item.replace('&', '&&') for item in list])
 
@@ -75,7 +77,7 @@ class AppLogic():
 				self.filtered = False
 			else: # play the selected song
 				selectedSong = self.fixIndexIfFiltered(index)
-				self.player.setPlaylist([item["AudioPath"] for item in self.songDat])
+				self.player.setPlaylist([f"http://{utils.config['musicHost']}/{utils.fixUrlText(item['AudioPath'])}" for item in self.songDat])
 				self.player.play(selectedSong)
 		else:
 			if self.playlistState == self.PLAYLIST_SELECTION:
@@ -85,7 +87,7 @@ class AppLogic():
 				self.playlistState += 1
 			else:
 				selectedSong = self.fixIndexIfFiltered(index)
-				self.player.setPlaylist([item["AudioPath"] for item in self.playlistSongDat])
+				self.player.setPlaylist([f"http://{utils.config['musicHost']}/{utils.fixUrlText(item['AudioPath'])}" for item in self.playlistSongDat])
 				self.player.play(selectedSong)
 				self.currentlyPlayingPlaylist = self.playlistDat[self.selectedPlaylist]["PlaylistName"]
 
@@ -164,9 +166,9 @@ class AppLogic():
 	def AddToQueue(self, index):
 		index = self.fixIndexIfFiltered(index)
 		if self.state == self.LIBRARY_STATE:
-			self.player.addToQueue(self.songDat[index]["AudioPath"])
+			self.player.addToQueue(f"http://{utils.config['musicHost']}/{utils.fixUrlText(self.songDat[index]['AudioPath'])}")
 		else:
-			self.player.addToQueue(self.playlistSongDat[index]["AudioPath"])
+			self.player.addToQueue(f"http://{utils.config['musicHost']}/{utils.fixUrlText(self.playlistSongDat[index]['AudioPath'])}")
 
 	def CreatePlaylist(self, text):
 		playlistFolder = utils.config["playlistFolder"]

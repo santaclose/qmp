@@ -1,6 +1,7 @@
 from urllib.request import urlopen
 from difflib import SequenceMatcher
 from github import Github
+import urllib.parse
 import subprocess
 import json
 import re
@@ -33,8 +34,8 @@ def nameToDirectoryName(name):
 			out += '_'
 	return out
 
-def htmlize(searchText):
-	return searchText.replace(' ', '%20')
+def fixUrlText(searchText):
+	return urllib.parse.quote(searchText)
 
 def similar(a, b):
 	return SequenceMatcher(None, a, b).ratio()
