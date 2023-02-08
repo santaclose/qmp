@@ -5,7 +5,7 @@ import utils
 
 class AppLogic():
 
-	def __init__(self, listViewModel, playlistListViewModel):
+	def __init__(self, listViewModel, playlistListViewModel, defaultVolume):
 
 		self.LIBRARY_STATE = 0
 		self.PLAYLIST_STATE = 1
@@ -40,7 +40,7 @@ class AppLogic():
 		self.playlistSongDat = None
 		self.currentlyPlayingPlaylist = None
 
-		self.player.setVolume(utils.config["defaultVolume"] if "defaultVolume" in utils.config.keys() else 0.5)
+		self.player.setVolume(defaultVolume)
 
 	def updateStringModel(self, model, list):
 		model.setStringList([item.replace('&', '&&') for item in list])

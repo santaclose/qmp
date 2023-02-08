@@ -4,6 +4,7 @@ from PySide2.QtQml import QQmlApplicationEngine
 from PySide2.QtGui import QFont, QFontDatabase
 from app_logic import AppLogic
 from os import sys
+import utils
 
 class Backend(QObject):
 
@@ -76,6 +77,8 @@ class Backend(QObject):
 if __name__ == '__main__':
 	sys.argv += ['--style', 'material']
 
+	defaultVolume = utils.config["defaultVolume"] if "defaultVolume" in utils.config.keys() else 0.5
+
 	QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
 	app = QApplication(sys.argv)
 
@@ -91,15 +94,20 @@ if __name__ == '__main__':
 	listViewModel = QStringListModel()
 	playlistListViewModel = QStringListModel()
 
-	appLogic = AppLogic(listViewModel, playlistListViewModel)
+	appLogic = AppLogic(listViewModel, playlistListViewModel, defaultVolume)
 	backend = Backend(appLogic)
 
 	appLogic.LoadArtists()
 
+	engine.rootContext().setContextProperty("appDirPath", __file__[:__file__.rfind('\\')] + "/")
 	engine.rootContext().setContextProperty("listViewModel", listViewModel)
 	engine.rootContext().setContextProperty("playlistListViewModel", playlistListViewModel)
 	engine.rootContext().setContextProperty("backend", backend)
 
-	engine.load(QUrl.fromLocalFile('view.qml'))
+	with open("view.qml", 'r') as qmlFile:
+		qmlCode = qmlFile.read()
+	qmlCode = qmlCode.replace("__DEFAULT_VOLUME__", str(defaultVolume))
+
+	engine.loadData(qmlCode.encode('utf-8'))
 
 	sys.exit(app.exec_())

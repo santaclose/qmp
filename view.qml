@@ -18,7 +18,7 @@ ApplicationWindow {
 
 			ToolButton {
 				Layout.alignment: Qt.AlignLeft
-				icon.source: "icons/back.svg"
+				icon.source: "file:///" + appDirPath + "icons/back.svg"
 				onClicked: {
 					backend.onBackButtonClicked()
 					searchTextField.text = ""
@@ -35,7 +35,7 @@ ApplicationWindow {
 
 			ToolButton {
 				Layout.alignment: Qt.AlignRight
-				icon.source: "icons/volume.svg"
+				icon.source: "file:///" + appDirPath + "icons/volume.svg"
 				onClicked: {
 					volumeMenu.open()
 				}
@@ -43,7 +43,7 @@ ApplicationWindow {
 
 			ToolButton {
 				Layout.alignment: Qt.AlignRight
-				icon.source: "icons/menu.svg"
+				icon.source: "file:///" + appDirPath + "icons/menu.svg"
 				onClicked: {
 					appMenu.open()
 				}
@@ -93,17 +93,17 @@ ApplicationWindow {
 			width: parent.width
 			ToolButton {
 				Layout.alignment: Qt.AlignLeft
-				icon.source: "icons/prev.svg"
+				icon.source: "file:///" + appDirPath + "icons/prev.svg"
 				onClicked: backend.onPrevButtonClicked()
 			}
 			ToolButton {
 				Layout.alignment: Qt.AlignLeft
-				icon.source: "icons/pause.svg"
+				icon.source: "file:///" + appDirPath + "icons/pause.svg"
 				onClicked: backend.onPauseButtonClicked()
 			}
 			ToolButton {
 				Layout.alignment: Qt.AlignLeft
-				icon.source: "icons/next.svg"
+				icon.source: "file:///" + appDirPath + "icons/next.svg"
 				onClicked: backend.onNextButtonClicked()
 			}
 			Slider {
@@ -134,7 +134,7 @@ ApplicationWindow {
 		id: volumeMenu
 		x: parent.width - width
 		Slider {
-			value: 0.5
+			value: __DEFAULT_VOLUME__
 			onMoved: backend.onVolumeChanged(value)
 		}
 	}
