@@ -19,8 +19,6 @@ class Player:
 		self.listPlayer = self.Player.media_list_player_new()
 		self.listPlayer.set_media_list(self.mediaList)
 		self.listPlayer.get_media_player().audio_set_volume(self.volume)
-
-	def play(self, index):
 		self.listPlayer.play_item_at_index(index)
 
 	def next(self):
