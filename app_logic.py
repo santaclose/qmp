@@ -77,8 +77,8 @@ class AppLogic():
 				self.filtered = False
 			else: # play the selected song
 				selectedSong = self.fixIndexIfFiltered(index)
-				self.player.setPlaylist([f"http://{utils.config['musicHost']}/{utils.fixUrlText(item['AudioPath'])}" for item in self.songDat])
-				self.player.play(selectedSong)
+				playlist = [f"http://{utils.config['musicHost']}/{utils.fixUrlText(item['AudioPath'])}" for item in self.songDat]
+				self.player.play(playlist, selectedSong)
 		else:
 			if self.playlistState == self.PLAYLIST_SELECTION:
 				self.selectedPlaylist = self.fixIndexIfFiltered(index)
@@ -87,8 +87,8 @@ class AppLogic():
 				self.playlistState += 1
 			else:
 				selectedSong = self.fixIndexIfFiltered(index)
-				self.player.setPlaylist([f"http://{utils.config['musicHost']}/{utils.fixUrlText(item['AudioPath'])}" for item in self.playlistSongDat])
-				self.player.play(selectedSong)
+				playlist = [f"http://{utils.config['musicHost']}/{utils.fixUrlText(item['AudioPath'])}" for item in self.playlistSongDat]
+				self.player.play(playlist, selectedSong)
 				self.currentlyPlayingPlaylist = self.playlistDat[self.selectedPlaylist]["PlaylistName"]
 
 	def LoadArtists(self):

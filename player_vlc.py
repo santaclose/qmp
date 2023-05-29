@@ -8,8 +8,7 @@ class Player:
 		self.Player = Instance('--loop --no-video')
 		self.listPlayer = None
 
-	def setPlaylist(self, playlist):
-
+	def play(self, playlist, index):
 		if self.listPlayer != None:
 			self.listPlayer.stop()
 			self.listPlayer.release()
