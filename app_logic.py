@@ -1,4 +1,4 @@
-import player_vlc as player_module
+import player_mpv as player_module
 import link_provider
 import pyperclip
 import utils
