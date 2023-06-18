@@ -1,5 +1,6 @@
 import player_mpv as player_module
 import link_provider
+import http_server
 import pyperclip
 import utils
 
@@ -41,6 +42,8 @@ class AppLogic():
 		self.currentlyPlayingPlaylist = None
 
 		self.player.setVolume(defaultVolume)
+		if 'serverEnabled' in utils.config.keys() and utils.config['serverEnabled']:
+			http_server.run(self.player)
 
 	def updateStringModel(self, model, list):
 		model.setStringList([item.replace('&', '&&') for item in list])

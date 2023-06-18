@@ -12,6 +12,7 @@ class Player:
 		self.player.stop()
 		[self.player.playlist_append(url) for url in playlist]
 		self.player.playlist_play_index(index)
+		self.player.pause = False
 
 	def next(self):
 		self.player.playlist_next()
@@ -30,6 +31,9 @@ class Player:
 
 	def setVolume(self, v): # v from 0 to 1
 		self.player.volume = v * 100
+
+	def getVolume(self):
+		return self.player.volume / 100.0
 
 	def addToQueue(self, song):
 		self.player.playlist_append(song)
