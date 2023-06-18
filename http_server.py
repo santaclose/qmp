@@ -68,3 +68,8 @@ def run(player_in, port=656):
 	player = player_in
 	x = threading.Thread(target=_run, args=(port,))
 	x.start()
+
+if __name__ == '__main__':
+	import player_mpv as player_module
+	player = player_module.Player()
+	run(player)
